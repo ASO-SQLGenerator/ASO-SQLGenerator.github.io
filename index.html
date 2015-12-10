@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>SQLstudy</title>
+  <link rel="stylesheet" href="css/SQLcss.css" type="text/css">
+  <link rel="stylesheet" href="css/handsontable.full.css">
+  <link rel="stylesheet" href="css/handsontable.removeRow.css">
+  <style type="text/css">
+	button.daBtn{
+		color:blue;
+	}
+	
+	button.dBtn{
+		color:red;
+	}
+  
+    .drag {
+      width: 180px;
+      height: 50px;
+      margin: 10px;
+      border: solid 1px #333;
+      background-color: #90EE90;
+      float: left;
+    }
+
+    .drop {
+      width: 180px;
+      height: 150px;
+      margin: 10px;
+      border: solid 1px #333;
+      background-color: #87CEFA;
+      float: left;
+    }
+
+    /*/!*	.drop { width: 150px;*/
+    /*height: 150px;*/
+    /*-webkit-border-radius: 75px;/!* width,heightの半分 *!/*/
+    /*-moz-border-radius: 75px;*/
+    /*border-radius: 75px;*/
+    /*background-color: #cf6;/!* 円の色 *!/*/
+    /*margin 30px;*/
+    /*border: solid 1px #333;*/
+    /*float:left;*/
+    /*}*/
+    /**!/*/
+    hr {
+      clear: both;
+    }
+  </style>
+  <!-- jquery と　jquery-ui をオンラインで使用する-->
+  <script type="text/javascript"
+          src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script type="text/javascript"
+          src="http://code.jquery.com/ui/1.10.3/jquery-ui.min.js"></script>
+  <!-- 検証用データ読み込み -->
+  <script type="text/javascript">
+    var name_control = {culum: '1', type: '2', num: '3', limit: '4'};
+    var limit_count = {10: 4, 20: 4, 30: 4, 40: 4, 50: 4, 60: 4, 70: 4, 80: 4};
+    var drag_name = 1;
+    var drop_name = 10;
+	var hot0;
+	var hot1;
+	var hot2;
+
+    function ChangeTab(tabname) {
+      // 全部消す
+      document.getElementById('create').style.display = 'none';
+      document.getElementById('insert').style.display = 'none';
+      document.getElementById('update').style.display = 'none';
+      document.getElementById('delete').style.display = 'none';
+      document.getElementById('select').style.display = 'none';
+      // 指定箇所のみ表示
+      if (tabname) {
+        document.getElementById(tabname).style.display = 'block';
+      }
+    }
+  </script>
+
+</head>
+<body>
+
+<div class="SQLarea">
+
+  <div class="tabbox">
+    <p class="tabs">
+      <a onclick="ChangeTab('create'); return false;" class="create" href="#create">CREATE</a>
+      <a onclick="ChangeTab('insert'); return false;" class="insert" href="#insert">INSERT</a>
+      <a onclick="ChangeTab('update'); return false;" class="update" href="#update">UPDATE</a>
+      <a onclick="ChangeTab('delete'); return false;" class="delete" href="#delete">DELETE</a>
+      <a onclick="ChangeTab('select'); return false;" class="select" href="#select">SELECT</a>
+    </p>
+    <form>
+  <input type="button" value="説明書を開く" onclick="handleWin = window.open('./img/usesample.pdf' , 'newwin' , 'width=723px,height=700px,scrollbars=yes')">
+  <input type="button" value="説明書を閉じる" onclick="if ( handleWin.closed == false ) handleWin.close();">
+    </form>
+    <div class="tab" id="create">
+      <p class="tabhead">CREATE</p>
+
+      <div class="cmain">
+
+        <!--  ここから追加変更 -->
+        <div class="cmain_table">テーブルスペース
+          <div id="ctablename0"></div>
+          <div id="c0">
+            <div id="ctable0"></div>
+          </div>
+          <div id="ctablename1"></div>
+          <div id="c1">
+            <div id="ctable1"></div>
+          </div>
+          <div id="ctablename2"></div>
+          <div id="c2">
+            <div id="ctable2"></div>
+          </div>
+        </div>
+        <!-- 追加ここまで  	-->
+        <div class="cmain_parts">パーツスペース
+
+          <div id="drag1" class="drag" name="drag_parts">列名<input type="text" id="colum" name="culum" size="15" maxlength="20" autocomplete="off">
+          </div>
+          <div id="drag2" class="drag" name="drag_parts">型名<select name="type">
+              <option value="int">int</option>
+              <option value="char">char</option>
+              <option value="varchar">varchar</option>
+            </select>
+            <input type="number" name="num" autocomplete="off" style="width:50px;" min="1" max="255">
+          </div>
+          <div id="drag3" class="drag" name="drag_parts">制約<select name="limit" class="limit">
+              <option value="unique key">unique key</option>
+              <option value="primary key">主キー</option>
+              <option value="not null">not null</option>
+              <option value="auto increment">auto increment</option>
+              <option value="foreign key">外部キー</option>
+            </select>
+          </div>
+          <div class="drop" id="drop_parts"></div>
+
+        </div>
+        <div class="cmain_create">組み立てスペース
+          <form name="param" id="param" action="#">
+            <label for="表明"><表名>
+              <input type="text" name="table_name" size="15" maxlength="20" autocomplete="off">
+            </label>
+
+            <div class="cspace" name="cspace_parts" id="cspace_parts"></div>
+            <button class="cmain_btn">確定</button>
+          	<label id="cErr" style="color:red;"></label>
+					</form>
+        </div>
+        <div class="cmain_sql">SQLスペース<br>
+          <textarea id="cmain_sqlarea" name="cmain_sqlarea" cols="58" rows="12" placeholder="SQL文が出力されます。"
+                    align="left" disabled = "true" style="font-size:110%;"></textarea>
+        </div>
+      </div>
+      <br class="clear">
+    </div>
+  </div>
+  <div class="tab" id="insert">
+    <p class="tabhead">INSERT</p>
+
+    <div class="imain">
+
+      <!--  ここから追加 -->
+      <div class="imain_table">テーブルスペース
+        <div id="itablename0"></div>
+        <div id="i0">
+          <div id="itable0"></div>
+        </div>
+        <div id="itablename1"></div>
+        <div id="i1">
+          <div id="itable1"></div>
+        </div>
+        <div id="itablename2"></div>
+        <div id="i2">
+          <div id="itable2"></div>
+        </div>
+      </div>
+      <!-- 追加ここまで  	-->
+      <div class="imain_sql">SQLスペース<br>
+          <textarea id="imain_sqlarea" name="imain_sqlarea" cols="60" rows="30" placeholder="SQL文が出力されます。"
+                    align="left" disabled = "true" style="font-size:110%;"></textarea>
+        </div>
+    <br class="clear">
+  </div>
+</div>
+<div class="tab" id="update">
+  <p class="tabhead">UPDATE</p>
+
+  <div class="umain">
+    <!--  ここから追加変更 -->
+    <div class="umain_table">テーブルスペース
+      <div id="utablename0"></div>
+      <div id="u0">
+        <div id="utable0"></div>
+      </div>
+      <div id="utablename1"></div>
+      <div id="u1">
+        <div id="utable1"></div>
+      </div>
+      <div id="utablename2"></div>
+      <div id="u2">
+        <div id="utable2"></div>
+      </div>
+    </div>
+    <!-- 追加ここまで  	-->
+    <div class="umain_parts">パーツスペース</div>
+    <div class="umain_create">組み立てスペース</div>
+    <div class="umain_sql">SQLスペース<br>
+          <textarea id="umain_sqlarea" name="umain_sqlarea" cols="58" rows="12" placeholder="SQL文が出力されます。"
+                    align="left" disabled = "true" style="font-size:110%;"></textarea>
+        </div>
+  <br class="clear">
+</div>
+</div>
+<div class="tab" id="delete">
+  <p class="tabhead">DELETE </p>
+
+  <div class="dmain">
+    <!--  ここから追加変更 -->
+    <div class="dmain_table">テーブルスペース
+      <div id="dtablename0"></div>
+      <div id="d0">
+        <div id="dtable0"></div>
+      </div>
+      <div id="dtablename1"></div>
+      <div id="d1">
+        <div id="dtable1"></div>
+      </div>
+      <div id="dtablename2"></div>
+      <div id="d2">
+        <div id="dtable2"></div>
+      </div>
+    </div>
+    <!-- 追加ここまで  	-->
+        <div class="dmain_parts">パーツスペース
+
+            <div id="find_deletecondition" class="deletecondition usedcheck" name="drag_parts">
+                <label>条件</label></br><input type="text" name="deletecolum" id="dcondition1" maxlength="30"></br>
+                <select id="dcondition2" name="dcons">
+                    <option value="equal">=</option>
+                    <option value="dainari">></option>
+                    <option value="syounari"><</option>
+                    <option value="dainari equal">>=</option>
+                    <option value="syounari equal"><=</option>
+                </select>
+                </br><input type="text" name="deletecolum2" id="dcondition3" maxlength="30"></div>
+
+            <div class="ddrop usedcheck" id="ddrop">削除する表名</br><input type="text" name="tablename" id="delete_tablename" maxlength="30">
+                <div class="ddrop_sortable"></div></div>
+
+            <div class="removeZone"></div>
+
+        </div>
+        <div class="dmain_create">組み立てスペース
+           <button class="dmain_btn" onClick="tabledelete()">確定</button>
+            <form name="delete_param" action="#">
+                <span class="dspace" name ="cdspace_parts" id="cdspace_parts"></span>
+                <!-- <input type="submit" value="確定"> -->
+            </form>
+
+        </div>
+        <div class="dmain_sql">SQLスペース<br>
+          <textarea id="dmain_sqlarea" name="dmain_sqlarea" cols="58" rows="12" placeholder="SQL文が出力されます。"
+                    align="left" disabled = "true" style="font-size:110%;"></textarea>
+        </div>
+        <br class="clear">
+    </div>
+</div>
+<div class="tab" id="select">
+  <p class="tabhead">SELECT </p>
+
+  <div class="smain">
+    <!--  ここから追加変更 -->
+    <div class="smain_table">テーブルスペース
+      <div id="stablename0"></div>
+      <div id="s0">
+        <div id="stable0"></div>
+      </div>
+      <div id="stablename1"></div>
+      <div id="s1">
+        <div id="stable1"></div>
+      </div>
+      <div id="stablename2"></div>
+      <div id="s2">
+        <div id="stable2"></div>
+      </div>
+    </div>
+    <!-- 追加ここまで  	-->
+    <div class="smain_parts">パーツスペース</div>
+    <div class="smain_create">組み立てスペース<br>
+      <img src ="./img/tukaemasen1.png"　width="500" height="350">
+    </div>
+   <div class="smain_sql">SQLスペース<br>
+          <textarea id="smain_sqlarea" name="smain_sqlarea" cols="58" rows="12" placeholder="SQL文が出力されます。"
+                    align="left" disabled = "true" style="font-size:110%;"></textarea>
+        </div>
+  <br class="clear">
+</div>
+</div>
+
+</div>
+
+<script type="text/javascript">
+// デフォルトのタブを選択
+ ChangeTab('create');
+// --></script>
+</div>
+<script src="vendor/handsontable.full.js"></script>
+<script src="vendor/handsontable.removeRow.js"></script>
+<script type="text/javascript" src="./bundle.min.js"></script>
+<!--　<script type="text/javascript" src="vendor/update_onclick.js"></script> -->
+</body>
+</html>
+
+
